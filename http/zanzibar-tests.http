@@ -1,0 +1,205 @@
+### Variables
+@baseUrl = http://localhost:5027
+@contentType = application/json
+
+### Scenario 1: Basic Document Access
+# Add direct viewer permission for user1 on doc1
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc1",
+    "relation": "viewer",
+    "subject": "user1",
+    "subjectRelation": "member"
+}
+
+### Check if user1 can view doc1
+POST {{baseUrl}}/api/permission/check
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc1",
+    "relation": "viewer",
+    "subject": "user1",
+    "subjectRelation": "member"
+}
+
+### Scenario 2: Group-based Permissions
+# Create a group
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "groups",
+    "object": "engineering",
+    "relation": "group",
+    "subject": "group:engineering",
+    "subjectRelation": "member"
+}
+
+### Add user2 to engineering group
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "groups",
+    "object": "engineering",
+    "relation": "member",
+    "subject": "user2",
+    "subjectRelation": "member"
+}
+
+### Give engineering group access to doc2
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc2",
+    "relation": "viewer",
+    "subject": "group:engineering",
+    "subjectRelation": "member"
+}
+
+### Check if user2 can view doc2 (through group membership)
+POST {{baseUrl}}/api/permission/check
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc2",
+    "relation": "viewer",
+    "subject": "user2",
+    "subjectRelation": "member"
+}
+
+### Scenario 3: Hierarchical Permissions
+# Create a parent document
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "parent-doc",
+    "relation": "viewer",
+    "subject": "user3"
+}
+
+#### Add child document relationship
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "child-doc",
+    "relation": "parent",
+    "subject": "parent-doc"
+}
+
+### Give user3 access to parent document
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "parent-doc",
+    "relation": "viewer",
+    "subject": "user3"
+}
+
+### Check if user3 can view child document (through parent relationship)
+POST {{baseUrl}}/api/permission/check
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "child-doc",
+    "relation": "viewer",
+    "subject": "user3"
+}
+
+### Scenario 4: Multiple Permission Types
+# Add editor permission for user4 on doc3
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc3",
+    "relation": "editor",
+    "subject": "user4",
+    "subjectRelation": "member"
+}
+
+### Add commenter permission for user4 on doc3
+POST {{baseUrl}}/api/permission/add
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc3",
+    "relation": "commenter",
+    "subject": "user4",
+    "subjectRelation": "member"
+}
+
+### Check different permission types for user4
+POST {{baseUrl}}/api/permission/check
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc3",
+    "relation": "editor",
+    "subject": "user4",
+    "subjectRelation": "member"
+}
+
+### Check different permission types for user4
+POST {{baseUrl}}/api/permission/check
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc3",
+    "relation": "commenter",
+    "subject": "user4",
+    "subjectRelation": "member"
+}
+
+### Scenario 5: Negative Test Cases
+# Check non-existent permission
+POST {{baseUrl}}/api/permission/check
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "nonexistent-doc",
+    "relation": "viewer",
+    "subject": "user5",
+    "subjectRelation": "member"
+}
+
+### Check permission for user not in group
+POST {{baseUrl}}/api/permission/check
+Content-Type: {{contentType}}
+
+{
+    "namespace": "documents",
+    "object": "doc2",
+    "relation": "viewer",
+    "subject": "user5",
+    "subjectRelation": "member"
+}
+
+### Get all relations for a document
+GET {{baseUrl}}/api/permission/relations?namespace=documents&object=doc3&relation=editor
+
+### Get all relations for all documents
+GET {{baseUrl}}/api/permission/relations?namespace=documents&object=*&relation=*
+
+### Get all relations in the system
+GET {{baseUrl}}/api/permission/relations?namespace=*&object=*&relation=* 
